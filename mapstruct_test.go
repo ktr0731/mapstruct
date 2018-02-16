@@ -45,22 +45,21 @@ func Test_checkPrecondition(t *testing.T) {
 }
 
 func Test_obtainConcrete(t *testing.T) {
-	m := &mapper{}
 	t.Run("non pointer value", func(t *testing.T) {
-		v := m.obtainConcrete(reflect.ValueOf("foo"))
+		v := obtainConcrete(reflect.ValueOf("foo"))
 		require.Equal(t, "foo", v.Interface().(string))
 	})
 
 	t.Run("pointer value", func(t *testing.T) {
 		foo := "foo"
-		v := m.obtainConcrete(reflect.ValueOf(&foo))
+		v := obtainConcrete(reflect.ValueOf(&foo))
 		require.Equal(t, foo, v.Interface().(string))
 	})
 
 	t.Run("nested pointer value", func(t *testing.T) {
 		foo := "foo"
 		foo2 := &foo
-		v := m.obtainConcrete(reflect.ValueOf(&foo2))
+		v := obtainConcrete(reflect.ValueOf(&foo2))
 		require.Equal(t, foo, v.Interface().(string))
 	})
 }
@@ -88,5 +87,23 @@ func TestMap(t *testing.T) {
 		res, err := Map(&Foo{Hoge: "dummy"}, &Foo{Hoge: "HOGE"})
 		require.NoError(t, err)
 		require.Exactly(t, &Foo{Hoge: "HOGE"}, res.(*Foo))
+	})
+
+	t.Run("nested", func(t *testing.T) {
+		type Bar struct {
+			Foo Foo
+		}
+		res, err := Map(&Bar{Foo{Hoge: "dummy"}}, &Bar{Foo{Hoge: "HOGE"}})
+		require.NoError(t, err)
+		require.Exactly(t, &Bar{Foo{Hoge: "HOGE"}}, res.(*Bar))
+	})
+
+	t.Run("nested2", func(t *testing.T) {
+		type Bar struct {
+			Foo *Foo
+		}
+		res, err := Map(&Bar{&Foo{Hoge: "dummy"}}, &Bar{&Foo{Hoge: "HOGE"}})
+		require.NoError(t, err)
+		require.Exactly(t, &Bar{&Foo{Hoge: "HOGE"}}, res.(*Bar))
 	})
 }

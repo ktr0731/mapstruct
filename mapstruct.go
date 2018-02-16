@@ -47,14 +47,16 @@ func checkPrecondition(v1, v2 interface{}) (*mapper, error) {
 }
 
 func (m *mapper) obtain(rv1, rv2 reflect.Value) {
-	m.c1 = m.obtainConcrete(rv1)
-	m.c2 = m.obtainConcrete(rv2)
+	m.c1 = obtainConcrete(rv1)
+	m.c2 = obtainConcrete(rv2)
+	if rv1.Kind() == reflect.Ptr {
+		m.isPointer = true
+	}
 }
 
-func (m *mapper) obtainConcrete(v reflect.Value) reflect.Value {
+func obtainConcrete(v reflect.Value) reflect.Value {
 	if v.Kind() == reflect.Ptr {
-		m.isPointer = true
-		return m.obtainConcrete(v.Elem())
+		return obtainConcrete(v.Elem())
 	}
 	return v
 }
@@ -75,12 +77,19 @@ func (m *mapper) mapStruct() (interface{}, error) {
 		}
 
 		switch from.Kind() {
-		case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr:
+		case reflect.Chan, reflect.Func, reflect.Map:
 			if from.IsNil() {
 				continue
 			}
 		case reflect.Invalid:
 			continue
+		case reflect.Ptr:
+			pv := resf.Addr()
+			if reflect.Zero(from.Type()).Interface() == from.Interface() {
+				pv.Elem().Set(to)
+			} else {
+				pv.Elem().Set(from)
+			}
 		default:
 			// primitive or struct
 
