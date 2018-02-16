@@ -1,6 +1,7 @@
 package mapstruct
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -15,7 +16,7 @@ type Foo struct {
 func Test_checkPrecondition(t *testing.T) {
 	t.Run("invalid", func(t *testing.T) {
 		var a interface{}
-		_, _, err := checkPrecondition(a, Foo{})
+		_, err := checkPrecondition(a, Foo{})
 		require.Error(t, err)
 	})
 
@@ -23,23 +24,44 @@ func Test_checkPrecondition(t *testing.T) {
 		var a, b interface{}
 		a = "foo"
 		b = "bar"
-		_, _, err := checkPrecondition(a, b)
+		_, err := checkPrecondition(a, b)
 		require.Error(t, err)
 	})
 
 	t.Run("not same types", func(t *testing.T) {
-		_, _, err := checkPrecondition("foo", 0)
+		_, err := checkPrecondition("foo", 0)
 		require.Error(t, err)
 	})
 
 	t.Run("not struct", func(t *testing.T) {
-		_, _, err := checkPrecondition("foo", "bar")
+		_, err := checkPrecondition("foo", "bar")
 		require.Error(t, err)
 	})
 
 	t.Run("normal", func(t *testing.T) {
-		_, _, err := checkPrecondition(Foo{}, Foo{})
+		_, err := checkPrecondition(Foo{}, Foo{})
 		require.NoError(t, err)
+	})
+}
+
+func Test_obtainConcrete(t *testing.T) {
+	m := &mapper{}
+	t.Run("non pointer value", func(t *testing.T) {
+		v := m.obtainConcrete(reflect.ValueOf("foo"))
+		require.Equal(t, "foo", v.Interface().(string))
+	})
+
+	t.Run("pointer value", func(t *testing.T) {
+		foo := "foo"
+		v := m.obtainConcrete(reflect.ValueOf(&foo))
+		require.Equal(t, foo, v.Interface().(string))
+	})
+
+	t.Run("nested pointer value", func(t *testing.T) {
+		foo := "foo"
+		foo2 := &foo
+		v := m.obtainConcrete(reflect.ValueOf(&foo2))
+		require.Equal(t, foo, v.Interface().(string))
 	})
 }
 
@@ -60,5 +82,11 @@ func TestMap(t *testing.T) {
 		res, err := Map(Foo{Hoge: "dummy"}, Foo{Hoge: "HOGE"})
 		require.NoError(t, err)
 		require.Exactly(t, Foo{Hoge: "HOGE"}, res.(Foo))
+	})
+
+	t.Run("pointers", func(t *testing.T) {
+		res, err := Map(&Foo{Hoge: "dummy"}, &Foo{Hoge: "HOGE"})
+		require.NoError(t, err)
+		require.Exactly(t, &Foo{Hoge: "HOGE"}, res.(*Foo))
 	})
 }
