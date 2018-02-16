@@ -3,11 +3,9 @@ package mapstruct
 import (
 	"errors"
 	"reflect"
-
-	"github.com/k0kubun/pp"
 )
 
-func MapStruct(v1, v2 interface{}) (interface{}, error) {
+func Map(v1, v2 interface{}) (interface{}, error) {
 	rv1, rv2, err := checkPrecondition(v1, v2)
 	if err != nil {
 		return nil, err
@@ -73,10 +71,8 @@ func mapStruct(rv1, rv2 reflect.Value) (interface{}, error) {
 			// if the value of from is the zero value, ignore it
 			if reflect.Zero(from.Type()).Interface() == from.Interface() {
 				pv.Elem().Set(to)
-				pp.Println("ZERO")
 			} else {
 				pv.Elem().Set(from)
-				pp.Println("NON ZERO")
 			}
 		}
 	}

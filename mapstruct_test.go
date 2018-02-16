@@ -43,21 +43,21 @@ func Test_checkPrecondition(t *testing.T) {
 	})
 }
 
-func TestMapStruct(t *testing.T) {
+func TestMap(t *testing.T) {
 	t.Run("left has value", func(t *testing.T) {
-		res, err := MapStruct(Foo{Hoge: "HOGE"}, Foo{})
+		res, err := Map(Foo{Hoge: "HOGE"}, Foo{})
 		require.NoError(t, err)
 		require.Exactly(t, Foo{Hoge: "HOGE"}, res.(Foo))
 	})
 
 	t.Run("right has value", func(t *testing.T) {
-		res, err := MapStruct(Foo{}, Foo{Hoge: "HOGE"})
+		res, err := Map(Foo{}, Foo{Hoge: "HOGE"})
 		require.NoError(t, err)
 		require.Exactly(t, Foo{Hoge: "HOGE"}, res.(Foo))
 	})
 
 	t.Run("left overwritten by right value", func(t *testing.T) {
-		res, err := MapStruct(Foo{Hoge: "dummy"}, Foo{Hoge: "HOGE"})
+		res, err := Map(Foo{Hoge: "dummy"}, Foo{Hoge: "HOGE"})
 		require.NoError(t, err)
 		require.Exactly(t, Foo{Hoge: "HOGE"}, res.(Foo))
 	})
