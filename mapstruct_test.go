@@ -106,4 +106,13 @@ func TestMap(t *testing.T) {
 		require.NoError(t, err)
 		require.Exactly(t, &Bar{&Foo{Hoge: "HOGE"}}, res.(*Bar))
 	})
+
+	t.Run("nested3", func(t *testing.T) {
+		type Bar struct {
+			Foo *Foo
+		}
+		res, err := Map(&Bar{nil}, &Bar{&Foo{Hoge: "HOGE"}})
+		require.NoError(t, err)
+		require.Exactly(t, &Bar{&Foo{Hoge: "HOGE"}}, res.(*Bar))
+	})
 }
