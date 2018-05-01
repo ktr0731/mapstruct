@@ -85,10 +85,22 @@ func (m *mapper) mapStruct() (interface{}, error) {
 			continue
 		case reflect.Ptr:
 			pv := resf.Addr()
-			if reflect.Zero(from.Type()).Interface() == from.Interface() {
+			if reflect.DeepEqual(reflect.Zero(from.Type()).Interface(), from.Interface()) {
 				pv.Elem().Set(to)
 			} else {
 				pv.Elem().Set(from)
+			}
+		case reflect.Slice:
+			if from.IsNil() {
+				if to.IsNil() {
+					continue
+				}
+				from.Set(to)
+			} else {
+				if to.IsNil() {
+					continue
+				}
+				from = reflect.AppendSlice(from, to)
 			}
 		default:
 			// primitive or struct
@@ -101,7 +113,7 @@ func (m *mapper) mapStruct() (interface{}, error) {
 			}
 
 			// if the value of from is the zero value, ignore it
-			if reflect.Zero(from.Type()).Interface() == from.Interface() {
+			if reflect.DeepEqual(reflect.Zero(from.Type()).Interface(), from.Interface()) {
 				pv.Elem().Set(to)
 			} else {
 				pv.Elem().Set(from)

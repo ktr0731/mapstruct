@@ -8,9 +8,10 @@ import (
 )
 
 type Foo struct {
-	Hoge string
-	Fuga int
-	piyo rune
+	Hoge  string
+	Fuga  int
+	piyo  rune
+	Slice []int
 }
 
 func Test_checkPrecondition(t *testing.T) {
