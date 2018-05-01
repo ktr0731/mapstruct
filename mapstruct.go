@@ -91,16 +91,18 @@ func (m *mapper) mapStruct() (interface{}, error) {
 				pv.Elem().Set(from)
 			}
 		case reflect.Slice:
-			if from.IsNil() {
-				if to.IsNil() {
+			pv := resf.Addr()
+			if to.IsNil() {
+				if from.IsNil() {
 					continue
 				}
-				from.Set(to)
+				pv.Elem().Set(from)
 			} else {
-				if to.IsNil() {
+				if from.IsNil() {
+					pv.Elem().Set(to)
 					continue
 				}
-				from = reflect.AppendSlice(from, to)
+				pv.Elem().Set(reflect.AppendSlice(to, from))
 			}
 		default:
 			// primitive or struct

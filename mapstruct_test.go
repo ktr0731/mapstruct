@@ -116,4 +116,22 @@ func TestMap(t *testing.T) {
 		require.NoError(t, err)
 		require.Exactly(t, &Bar{&Foo{Hoge: "HOGE"}}, res.(*Bar))
 	})
+
+	t.Run("slice1", func(t *testing.T) {
+		res, err := Map(Foo{Slice: []int{10}}, Foo{Slice: []int{20, 30}})
+		require.NoError(t, err)
+		require.Exactly(t, Foo{Slice: []int{10, 20, 30}}, res.(Foo))
+	})
+
+	t.Run("slice2 (has to)", func(t *testing.T) {
+		res, err := Map(Foo{Slice: []int{10}}, Foo{})
+		require.NoError(t, err)
+		require.Exactly(t, Foo{Slice: []int{10}}, res.(Foo))
+	})
+
+	t.Run("slice3 (has from)", func(t *testing.T) {
+		res, err := Map(Foo{}, Foo{Slice: []int{10}})
+		require.NoError(t, err)
+		require.Exactly(t, Foo{Slice: []int{10}}, res.(Foo))
+	})
 }
